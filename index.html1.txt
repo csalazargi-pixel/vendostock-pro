@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VendoStock Pro</title>
+<link rel="manifest" href="manifest.json">
+
+<style>
+body{
+font-family:Arial;
+margin:0;
+background:#eef2ea;
+}
+
+header{
+background:#2f7f10;
+color:white;
+padding:20px;
+text-align:center;
+}
+
+.container{
+padding:20px;
+}
+
+input{
+width:100%;
+padding:14px;
+margin:10px 0;
+border-radius:10px;
+border:1px solid #ccc;
+font-size:16px;
+}
+
+button{
+background:#78b41f;
+color:white;
+border:none;
+padding:14px;
+border-radius:10px;
+width:100%;
+font-size:16px;
+cursor:pointer;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:15px;
+max-width:450px;
+margin:auto;
+box-shadow:0 3px 12px rgba(0,0,0,.15);
+}
+
+.hidden{
+display:none;
+}
+
+.item{
+padding:12px;
+border-bottom:1px solid #ddd;
+cursor:pointer;
+}
+
+.item:hover{
+background:#eef7df;
+}
+
+.ok{
+color:green;
+font-weight:bold;
+}
+
+.no{
+color:red;
+font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>🟢 VendoStock Pro</h1>
+<p>Buscador Inteligente de Repuestos</p>
+</header>
+
+<div class="container">
+
+<div class="card" id="login">
+
+<h2>🔐 Iniciar sesión</h2>
+
+<input type="text" id="user" placeholder="Usuario">
+<input type="password" id="pass" placeholder="Contraseña">
+
+<button onclick="login()">Ingresar</button>
+
+<p id="msg"></p>
+
+</div>
+
+<div id="app" class="hidden">
+
+<div class="card">
+
+<input id="buscar" placeholder="Buscar repuesto o código...">
+
+<div id="lista"></div>
+
+<hr>
+
+<h3>Detalle</h3>
+
+<p><b>Descripción:</b></p>
+<div id="nombre">-</div>
+
+<p><b>Código:</b></p>
+<div id="codigo">-</div>
+
+<p><b>Stock:</b></p>
+<div id="stock">-</div>
+
+<button onclick="copiarCodigo()">📋 Copiar código</button>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const USER = "vendomatica";
+const PASS = "Vend321";
+
+const data = [
+{codigo:"3334803",nombre:"FILTRO CORRIENTE 5 AMPER PN 3030 - AMS",stock:2},
+{codigo:"3339123",nombre:"BOMBA PN 098760 220V/50HZ",stock:0},
+{codigo:"3339382",nombre:"FILTRO RED PN OV3512 KORO",stock:3}
+];
+
+function login(){
+
+let u=document.getElementById('user').value;
+let p=document.getElementById('pass').value;
+
+if(u===USER && p===PASS){
+
+document.getElementById('login').classList.add('hidden');
+document.getElementById('app').classList.remove('hidden');
+
+}else{
+document.getElementById('msg').innerText="Usuario o contraseña incorrectos";
+document.getElementById('msg').style.color="red";
+}
+
+}
+
+function render(q=""){
+
+const lista=document.getElementById('lista');
+lista.innerHTML="";
+
+const resultados=data.filter(x=>
+x.nombre.toLowerCase().includes(q) ||
+x.codigo.includes(q)
+);
+
+resultados.forEach(x=>{
+
+let div=document.createElement('div');
+
+div.className='item';
+
+div.innerHTML=`
+<b>${x.nombre}</b><br>
+Código: ${x.codigo}<br>
+${x.stock>0 ?
+"<span class='ok'>🟢 STOCK DISPONIBLE</span>" :
+"<span class='no'>🔴 SIN STOCK</span>"}
+`;
+
+div.onclick=()=>mostrar(x);
+
+lista.appendChild(div);
+
+});
+
+}
+
+function mostrar(x){
+
+document.getElementById('nombre').innerText=x.nombre;
+document.getElementById('codigo').innerText=x.codigo;
+document.getElementById('stock').innerText=x.stock;
+
+}
+
+function copiarCodigo(){
+
+let codigo=document.getElementById('codigo').innerText;
+
+navigator.clipboard.writeText(codigo);
+
+alert("Código copiado: " + codigo);
+
+}
+
+document.addEventListener('input',(e)=>{
+
+if(e.target.id==='buscar'){
+render(e.target.value.toLowerCase());
+}
+
+});
+
+render();
+
+if('serviceWorker' in navigator){
+navigator.serviceWorker.register('service-worker.js');
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+"name":"VendoStock Pro",
+"short_name":"VendoStock",
+"start_url":"./index.html",
+"display":"standalone",
+"background_color":"#eef2ea",
+"theme_color":"#2f7f10",
+"icons":[]
+}
