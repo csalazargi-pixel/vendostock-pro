@@ -1,0 +1,162 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Vendomática Buscador PRO</title>
+<style>
+body{font-family:Arial;margin:0;background:#eef2ea}
+header{background:#fff;padding:20px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+h1{color:#6ea81c}
+#buscar{width:70%;padding:15px;font-size:18px;border-radius:10px;border:2px solid #6ea81c}
+button{background:#6ea81c;color:#fff;border:none;padding:12px 18px;border-radius:10px;cursor:pointer}
+.container{display:flex;gap:20px;padding:20px}
+.left,.right{background:#fff;border-radius:16px;padding:20px;box-shadow:0 3px 12px rgba(0,0,0,.12)}
+.left{flex:1.5}
+.right{flex:1}
+.item{padding:10px;border-bottom:1px solid #ddd;cursor:pointer;border-radius:10px}
+.item:hover{background:#eef7df}
+.codigo{color:#5b9817;font-weight:bold}
+.ok{color:green;font-weight:bold}
+.no{color:red;font-weight:bold}
+.dark{background:#1e1e1e;color:#fff}
+.dark .left,.dark .right,.dark header{background:#2b2b2b;color:#fff}
+</style>
+</head>
+<body>
+
+<header>
+<h1>🟢 VENDOMÁTICA - BUSCADOR DE REPUESTOS PRO</h1>
+
+<input id="buscar" placeholder="Buscar repuesto o código">
+
+<button onclick="toggleDark()">🌙 Modo Oscuro</button>
+
+</header>
+
+<div class="container">
+
+<div class="left">
+
+<h2>📋 Resultados (<span id="contador">0</span>)</h2>
+
+<div id="lista"></div>
+
+</div>
+
+<div class="right">
+
+<h2>📦 Detalle</h2>
+
+<p><b>Descripción:</b></p>
+<div id="nombre">Seleccione un repuesto</div>
+
+<hr>
+
+<p><b>Código:</b></p>
+<div id="codigo" class="codigo">-</div>
+
+<br>
+
+<button onclick="copiarCodigo()">📋 Copiar código</button>
+
+<hr>
+
+<p><b>Stock:</b></p>
+<div id="stock">-</div>
+
+<p><b>Estado:</b></p>
+<div id="estado">-</div>
+
+<hr>
+
+<p><b>Últimos vistos:</b></p>
+<div id="historial">Sin historial</div>
+
+</div>
+
+</div>
+
+<script>
+
+const data = [{"codigo": "3339131", "nombre": "ABERTURA SOLUBLES CONCERTO PN 254086", "stock": 9}, {"codigo": "3334676", "nombre": "ACOPLE ESPIRAL PN 1477022", "stock": 4}, {"codigo": "3336789", "nombre": "AIR BREAK COMPLETO PN0V1133 COLI BRI KIK", "stock": 5}, {"codigo": "3335259", "nombre": "ARANDELA DE MANIJA PN 20852 AMS", "stock": 2}, {"codigo": "3339190", "nombre": "ASTA SISTEMA DE AZUCAR KIKKO PN 099605", "stock": 4}, {"codigo": "3339138", "nombre": "BACKLIGHT CAMALEO COCA COLA 500ML OCTOGO", "stock": 39}, {"codigo": "3342923", "nombre": "BACKLIGHT CAMALEON 721V CRUSH NARANJA", "stock": 4}, {"codigo": "3342916", "nombre": "BACKLIGHT CAMALEON 721V FRUGOS FRESHX500", "stock": 5}, {"codigo": "3342898", "nombre": "BACKLIGHT CAMALEON CRUSH NARANJA 450 ML", "stock": 110}, {"codigo": "3339907", "nombre": "BACKLIGHT CAMALEON FANTA KOL INGL 500ML", "stock": 31}, {"codigo": "3342930", "nombre": "BACKLIGHT CAMALEON FRUGOS FRESH 500 ML", "stock": 9}, {"codigo": "3339905", "nombre": "BACKLIGHT CAMALEON SPRITE S/AZUCAR 500ML", "stock": 29}, {"codigo": "3343508", "nombre": "BACKLIGHT CAMALEON V POWER FRUTA 600 ML", "stock": 2}, {"codigo": "3343507", "nombre": "BACKLIGHT CAMALEON V POWER MORA 600 ML", "stock": 2}, {"codigo": "3339110", "nombre": "BACKLIGHT GEN AMS 12.8X10 S/CENSO PROV", "stock": 10}, {"codigo": "3343673", "nombre": "BACKLIGHT MANZANA SNLUI CAMAL", "stock": 55}, {"codigo": "3336689", "nombre": "BACKLIGHT MQ CAMALEON INCA KOLA 500ML", "stock": 20}, {"codigo": "3334597", "nombre": "BACKLIGHT MQ CAMALEON S.LUIS SGAS 625ML", "stock": 10}, {"codigo": "3343222", "nombre": "BACKLIGHT SAN LUIS 750 ML CAMALEO 621 CC", "stock": 44}, {"codigo": "3343224", "nombre": "BACKLIGHT SAN LUIS 750 ML CAMALEO 821 CC", "stock": 1}, {"codigo": "3343625", "nombre": "BACKLIGHT SAN LUIS MANZANA 625 ML", "stock": 54}, {"codigo": "3343626", "nombre": "BACKLIGHT SAN LUIS MARACUYA 625 ML", "stock": 100}, {"codigo": "3339491", "nombre": "BALASTRO ILUMINACION PN 1127052 CAMALEON", "stock": 6}, {"codigo": "3339278", "nombre": "BALDOSA SUPERIOR PN 255678", "stock": 1}, {"codigo": "3339118", "nombre": "BANDEJA COMPARTIMIENTO DISPENSA PN255781", "stock": 3}, {"codigo": "3343059", "nombre": "BANDEJA DE PRODUCTO CRANE PN CR0005222", "stock": 1}, {"codigo": "3338559", "nombre": "BANDEJA DRENAJE PN 1122475", "stock": 2}, {"codigo": "3333772", "nombre": "BANDEJA HUECO SUMINISTRO PN OV3691", "stock": 2}, {"codigo": "3339279", "nombre": "BANDEJA MIXER PN 255780", "stock": 3}, {"codigo": "3335047", "nombre": "BASE CANISTER PN OV4107 NECTA", "stock": 1}, {"codigo": "3339712", "nombre": "BEVMAX 6 ATLAS 7 INCH TOUCH PN CR0020297", "stock": 2}, {"codigo": "3335851", "nombre": "BILLA PVC DE 4 MM", "stock": 42}, {"codigo": "3339526", "nombre": "BOBINA 60HZ ELECTROV 2 VIA PN 0V0918 COL", "stock": 4}, {"codigo": "3339123", "nombre": "BOMBA PN 098760 220V/50HZ 48W COL BR KIK", "stock": 19}, {"codigo": "3339123", "nombre": "BOMBA PN 098760 220V/50HZ 48W COL BR KIK", "stock": 6}, {"codigo": "3339530", "nombre": "BOQUILLA AZUC PN 099721 COLIBR BRIO KIKK", "stock": 5}, {"codigo": "3336389", "nombre": "BOQUILLA CAIDA PRODUCT 253994 CONCERT", "stock": 4}, {"codigo": "3335229", "nombre": "BOQUILLA MIXER 2.3 9-11CC PN 255787 CONC", "stock": 2}, {"codigo": "3334036", "nombre": "BOQUILLA MIXTA PN OV2519 COLIB BRI KIK", "stock": 2}, {"codigo": "3334434", "nombre": "BOTON DEVOLUCION PN 20081 AMS", "stock": 10}, {"codigo": "850014", "nombre": "CABLE DE CARGA AC MO 50-16000-182R", "stock": 3}, {"codigo": "3343577", "nombre": "CABLE FLAT SENSOR D ENTREG NP 21426D AMS", "stock": 5}, {"codigo": "850021", "nombre": "CABLE FOR UPT1000 POWER + COIN SORTING", "stock": 13}, {"codigo": "3343264", "nombre": "CABLE FOR UPT1000 POWER COIN PN 41000300", "stock": 6}, {"codigo": "850268", "nombre": "CABLE JACK PLUG MACHO PREMIUM TELEMETRY", "stock": 10}, {"codigo": "3343332", "nombre": "CABLEADO DE EVAPORADOR 1124185 CAMALE", "stock": 1}, {"codigo": "3338865", "nombre": "CABLEADO DE MOTORES CAMALEON PN 1122918", "stock": 1}, {"codigo": "3338866", "nombre": "CABLEADO DE PUERTA CAMALEON PN 1122905", "stock": 8}, {"codigo": "3335871", "nombre": "CAJA ASPIRAC PN OV1537 COLIBR BRIO KIKK", "stock": 1}, {"codigo": "3339619", "nombre": "CALDERA CON RESISTENCIA 1500W PN 255832", "stock": 10}, {"codigo": "3339619", "nombre": "CALDERA CON RESISTENCIA 1500W PN 255832", "stock": 1}, {"codigo": "3343517", "nombre": "CALDERA KIKO 0V3680", "stock": 2}, {"codigo": "3336291", "nombre": "CALDERA KIKO 250341", "stock": 3}, {"codigo": "3336291", "nombre": "CALDERA KIKO 250341", "stock": 2}, {"codigo": "3334438", "nombre": "CANAL INCLINADO DE MONEDAS N -P 20099", "stock": 3}, {"codigo": "3335142", "nombre": "CANISTER CAFE MOL C TAPA PN11025739 CONC", "stock": 2}, {"codigo": "3335042", "nombre": "CANISTER CAFE PN.OV3681", "stock": 4}, {"codigo": "3339935", "nombre": "CANISTER PARA AZUCAR PN 253332", "stock": 1}, {"codigo": "3335133", "nombre": "CARRIL DE BEBIDAS (PAR) PN 21475-02 AMS", "stock": 4}, {"codigo": "3338811", "nombre": "CARTER MIXER PN 255784", "stock": 1}, {"codigo": "3339497", "nombre": "CASQUILLO BAT MIXER PN 39733800 CONCERTO", "stock": 5}, {"codigo": "831361", "nombre": "CERRADURA VAN LOCK 4275S - USADO", "stock": 24}, {"codigo": "3339882", "nombre": "CHAPA VAN LOCK STANDAR PN 4275S", "stock": 200}, {"codigo": "850063", "nombre": "CHIP M2M CLARO - NUEVO", "stock": 10}, {"codigo": "3333694", "nombre": "CIERRE PARA CANISTER PN 98630", "stock": 1}, {"codigo": "3336323", "nombre": "CJTO CALDERA 1500W 230V PN 255835", "stock": 1}, {"codigo": "3339666", "nombre": "COIN BOX ASSEMBLY PN 1088058", "stock": 3}, {"codigo": "3334358", "nombre": "COMPRESOR UNIDAD 1/2 220V/1F/60HZ-AMS", "stock": 2}, {"codigo": "3335382", "nombre": "CONDUCTO Y PN 93963", "stock": 27}, {"codigo": "3334801", "nombre": "CONECTOR FLAT DE DISPLAY PN 24015F - AMS", "stock": 2}, {"codigo": "3343579", "nombre": "CONJUNTO CALDERA 5EV 261350 CONCER", "stock": 1}, {"codigo": "3334635", "nombre": "CONMUTADOR ELECTRICO AMS PN 3284", "stock": 10}, {"codigo": "3334636", "nombre": "CONMUTADOR ELECTRONICO AMS PN 3274", "stock": 8}, {"codigo": "3336798", "nombre": "CONTADOR VOLUMETRICO PN 258625 BLANCO", "stock": 3}, {"codigo": "3339165", "nombre": "CONTADOR VOLUMETRO PN 098707 COL BRI KIK", "stock": 14}, {"codigo": "3339286", "nombre": "CONTENEDOR 2.5L 2 RUED 2 MUEL PN 254574", "stock": 1}, {"codigo": "3333420", "nombre": "CORDON VULCANIZADO 3X14 AWG", "stock": 100}, {"codigo": "3339373", "nombre": "CRISTAL DISPLAY PN 0V3457 COL BRI KIK KO", "stock": 3}, {"codigo": "3333747", "nombre": "DESLIZADOR CUCHARITA PN OV3022 BRI COLIB", "stock": 2}, {"codigo": "3333937", "nombre": "DESLIZADOR MONEDA AMS PN 20339-01", "stock": 1}, {"codigo": "3334958", "nombre": "DESLIZADOR MONEDA CRANE PN 1575003", "stock": 3}, {"codigo": "3334956", "nombre": "DESLIZADOR SUP DE MONEDAS P N 25806 AMS", "stock": 3}, {"codigo": "3339249", "nombre": "DISPLAY 2X16 AZ PN 251653 SNAK KIK BRI 3", "stock": 2}, {"codigo": "3339249", "nombre": "DISPLAY 2X16 AZ PN 251653 SNAK KIK BRI 3", "stock": 1}, {"codigo": "3333943", "nombre": "DISPLAY 2X20 LED VENDO VUE-40 PN 1249924", "stock": 6}, {"codigo": "3333943", "nombre": "DISPLAY 2X20 LED VENDO VUE-40 PN 1249924", "stock": 1}, {"codigo": "3334664", "nombre": "DISPLAY MAQUINA CRANE PN 1816006", "stock": 2}, {"codigo": "3336544", "nombre": "DISPLAY PN 26115 AMS", "stock": 2}, {"codigo": "3334136", "nombre": "EJE MOLINILLO PN 098609", "stock": 6}, {"codigo": "3335511", "nombre": "EJE RODILLO PN 21250 AMS", "stock": 1}, {"codigo": "3333799", "nombre": "ELECTROVALVULA 220V PN 097383 COLIBR KIK", "stock": 52}, {"codigo": "3338534", "nombre": "EMBUDO CAFE PN 254521", "stock": 4}, {"codigo": "3335872", "nombre": "EMBUDO CHOCOLATE Y LECHE COLIBRI 0V1535", "stock": 2}, {"codigo": "3339632", "nombre": "ENCHUFE PVC 15A 125V L/T AMARILLO LEVIT", "stock": 17}, {"codigo": "3334674", "nombre": "ENGRANAJE ESPIRAL PN 1477020 CRAN DN58", "stock": 3}, {"codigo": "3334473", "nombre": "ENSAMBLE CERRADURA TIPO T PN 20130", "stock": 4}, {"codigo": "3338540", "nombre": "ESCUDO CENTRAL PUERTA PN 255833", "stock": 2}, {"codigo": "3343064", "nombre": "ESCUDO INFERIOR PUERTA PN 255796.000", "stock": 1}, {"codigo": "3333762", "nombre": "ESPIRAL CANISTER PN 98608 NECTA", "stock": 1}, {"codigo": "3333833", "nombre": "ESPIRAL X18 1.21 ABERT PN 20120-18 AMS", "stock": 2}, {"codigo": "3335060", "nombre": "ESQUINERO VIDRIO PUERTA PN 24099 AMS", "stock": 2}, {"codigo": "3339375", "nombre": "ESTRACTOR VAPOR 098583 COLIB BRI KIK", "stock": 5}, {"codigo": "3339375", "nombre": "ESTRACTOR VAPOR 098583 COLIB BRI KIK", "stock": 2}, {"codigo": "3339375", "nombre": "ESTRACTOR VAPOR 098583 COLIB BRI KIK", "stock": 1}, {"codigo": "3343156", "nombre": "ETIQUETA LOGO CONCERTO PN 255807", "stock": 2}, {"codigo": "3339169", "nombre": "EVAPORADOR ENFRIADOR PN 20034", "stock": 1}, {"codigo": "3343173", "nombre": "EXTENSION SOCKET DE LAMPARA PN 1150259", "stock": 5}, {"codigo": "3334803", "nombre": "FILTRO CORRIENTE 5 AMPER  PN 3030 - AMS", "stock": 2}, {"codigo": "3342805", "nombre": "FILTRO MAQ VENDING CFS517 PN 55600-01", "stock": 27}, {"codigo": "3339382", "nombre": "FILTRO RED PN OV3512 KORO", "stock": 3}, {"codigo": "3339520", "nombre": "FLUORESCENTE 18W L DIA PHILIPS LCM", "stock": 6}, {"codigo": "3339503", "nombre": "FLUORESCENTE LED 10W PN 1237136-1 CAMALE", "stock": 8}, {"codigo": "3339504", "nombre": "FLUORESCENTE LED 5W 24 PN 1237136 CAMALE", "stock": 7}, {"codigo": "3339366", "nombre": "FLUORESCENTE RECTO 36W LUZ BLANCA", "stock": 11}, {"codigo": "3335282", "nombre": "FUSIBLE 2 AMP 5 X 20 PN 97097", "stock": 7}, {"codigo": "3335285", "nombre": "FUSIBLE T 6.3 AMP PN 98170", "stock": 8}, {"codigo": "3333822", "nombre": "GANCHO DESECHOS PN 094048 COLIB BRI KIK", "stock": 7}, {"codigo": "3336275", "nombre": "GRUPO CAFE PN250026 VENE KIKO BRI COLI", "stock": 4}, {"codigo": "3339592", "nombre": "GRUPO CAFE Z3000 VARIABLE PN 252441", "stock": 3}, {"codigo": "3339715", "nombre": "GRUPO Z4000 CAMARA D38 PN 254325", "stock": 8}, {"codigo": "3339715", "nombre": "GRUPO Z4000 CAMARA D38 PN 254325", "stock": 1}, {"codigo": "3338566", "nombre": "GUARNICION PISTON PN 93167", "stock": 10}, {"codigo": "3333842", "nombre": "GUARNICION PROTECCION MOT PN 097917 KORO", "stock": 20}, {"codigo": "3334489", "nombre": "IMAN DE CIERRE PN 097508", "stock": 5}, {"codigo": "3343650", "nombre": "INSTRUCTIVO CAFE POS Y BILLETERA", "stock": 29}, {"codigo": "3343651", "nombre": "INSTRUCTIVO POS Y BILLETERA ESPEJO", "stock": 60}, {"codigo": "3334433", "nombre": "INTERRUPTOR CIERRE D PUERT  PN 3036  AMS", "stock": 5}, {"codigo": "3339487", "nombre": "INTERRUPTOR PUERTA INTE PN 1401110 CRANE", "stock": 1}, {"codigo": "3339399", "nombre": "INTERRUPTOR PUERTA PN 097796 COLI BR KIK", "stock": 5}, {"codigo": "3334654", "nombre": "INTERRUPTOR PUERTA PN AP380258 CRANE", "stock": 2}, {"codigo": "3339492", "nombre": "JG SEGURO PN 1123724 CAMALEON", "stock": 2}, {"codigo": "3333727", "nombre": "JG SENSOR BOARD PRIMARY PN 26626 AMS", "stock": 6}, {"codigo": "3339884", "nombre": "JGO DE VINIL LATERAL 721V", "stock": 1}, {"codigo": "3336774", "nombre": "JGO SELECCION X 20 CONCERTO ALTOMAYO", "stock": 2}, {"codigo": "3339662", "nombre": "JGO VINIL 2 LAT 2 FRO BAC MAQ CONC ALTOM", "stock": 3}, {"codigo": "3336618", "nombre": "JGO VINIL 2 LAT MAQUINA CAMALEON 621", "stock": 10}, {"codigo": "3338779", "nombre": "JGO VINIL 2 LAT MAQUINA CAMALEON 821", "stock": 2}, {"codigo": "3339208", "nombre": "JGO VINIL CONCERTO ALTOMAYO 2 LATERALES", "stock": 1}, {"codigo": "3339212", "nombre": "JGO VINIL KIKKO ALTOMAYO 2 LAT Y 2 FRONT", "stock": 7}, {"codigo": "3339213", "nombre": "JGO VINIL KIKKO LAVAZZA 2 LAT Y 2 FRONT", "stock": 4}, {"codigo": "3335230", "nombre": "JUNTA OR 2021 PN 253984 CONCERTO", "stock": 20}, {"codigo": "3335234", "nombre": "JUNTA OR 3137 PN 253985 CONCERTO", "stock": 40}, {"codigo": "3339146", "nombre": "KIT MOTOR BATIDOR 98808 BRI COLIB KIKK", "stock": 2}, {"codigo": "3339409", "nombre": "KIT SENSOR BOARD SECUNDARY PN 26627 AMS", "stock": 12}, {"codigo": "3335509", "nombre": "LAMPARA LED 2 PN 27995-03 MAQ AMS", "stock": 3}, {"codigo": "3334914", "nombre": "LED BOARD N-P 24329 AMS", "stock": 4}, {"codigo": "3335106", "nombre": "LENS DISPLAY BLUE ROHS 1121103-1", "stock": 23}, {"codigo": "3336614", "nombre": "LEXAM FRONTAL CAMALEON 621", "stock": 4}, {"codigo": "3336474", "nombre": "LEXAN CAMALEÓN 721 39X72,2DBV", "stock": 3}, {"codigo": "3336473", "nombre": "LEXAN CAMALEÓN 821 39X72,2DBV", "stock": 3}, {"codigo": "3333754", "nombre": "MANGUERA SILIC MT PN 097529 BRI COLI KIK", "stock": 2}, {"codigo": "3339523", "nombre": "MANIJA PUERTA PN 1002635 CAMALEON", "stock": 6}, {"codigo": "3334335", "nombre": "MARCO CAJA DE DEVOLUCION PN 23372 AMS", "stock": 3}, {"codigo": "3334746", "nombre": "MARCO ENTREGA PRODUCT PN 1143346-1 VUE40", "stock": 7}, {"codigo": "3343067", "nombre": "MARCO RECUPERA MONEDA PN 255680 CONCERTO", "stock": 1}, {"codigo": "3335756", "nombre": "MARCO SELECCION PN 21762 AMS", "stock": 11}, {"codigo": "3343023", "nombre": "MEMBRANA DE TECLADO CONCERTO PN 265546", "stock": 2}, {"codigo": "3339405", "nombre": "MENSOLA MIXER PN 0V3712 KIKO", "stock": 2}, {"codigo": "3335185", "nombre": "MICA DESLIZADOR D BOTELL PN80190501 DN58", "stock": 1}, {"codigo": "3334444", "nombre": "MICA VERDE BISEL DISPLAY PN 22175 AMS", "stock": 3}, {"codigo": "3334443", "nombre": "MICRO DOSIFICADOR UL PN 0V1931", "stock": 2}, {"codigo": "3339370", "nombre": "MICROINTERRUPTOR NEGRO PN 0V1141 KIKKO", "stock": 4}, {"codigo": "831336", "nombre": "MOD TELEME ATENTO AMERICA UNO CUSTOS", "stock": 27}, {"codigo": "3336767", "nombre": "MOD TELEME ATENTO AMERICA UNO CUSTOS", "stock": 16}, {"codigo": "3336767", "nombre": "MOD TELEME ATENTO AMERICA UNO CUSTOS", "stock": 1}, {"codigo": "3336324", "nombre": "MOLINILLO ANTIHORARIO PN 255243 NECTA", "stock": 2}, {"codigo": "3336324", "nombre": "MOLINILLO ANTIHORARIO PN 255243 NECTA", "stock": 1}, {"codigo": "3339910", "nombre": "MOLINILLO PN 99336", "stock": 6}, {"codigo": "3335612", "nombre": "MONEDERO CF7000 MDB CLSA", "stock": 2}, {"codigo": "3339163", "nombre": "MONEDERO CF7000 MDB VPSA", "stock": 5}, {"codigo": "3339163", "nombre": "MONEDERO CF7000 MDB VPSA", "stock": 5}, {"codigo": "3336325", "nombre": "MONEDERO J2000 MDB CL", "stock": 2}, {"codigo": "3336325", "nombre": "MONEDERO J2000 MDB CL", "stock": 1}, {"codigo": "3336326", "nombre": "MONEDERO J2000 MDB IRDA CL", "stock": 4}, {"codigo": "3338595", "nombre": "MOTOBATIDOR PN 254842 CONCERTO", "stock": 5}, {"codigo": "3339605", "nombre": "MOTODOSADOR SOLUBLE NECTA PN 254058", "stock": 3}, {"codigo": "3339605", "nombre": "MOTODOSADOR SOLUBLE NECTA PN 254058", "stock": 1}, {"codigo": "3338597", "nombre": "MOTOR BOQUILLAS PN 255820", "stock": 1}, {"codigo": "3343724", "nombre": "MOTOR CIRCUITO DE INICIO AMS 23007-04", "stock": 8}, {"codigo": "3333851", "nombre": "MOTOR CIRCUITO DE INICIO PN 23007 AMS", "stock": 1}, {"codigo": "3333991", "nombre": "MOTOR DE GRUPO CAFE PN 098708 KIKKO", "stock": 6}, {"codigo": "3333991", "nombre": "MOTOR DE GRUPO CAFE PN 098708 KIKKO", "stock": 1}, {"codigo": "3334667", "nombre": "MOTOR DE PRODUCTO N-P 1577038 CRANE", "stock": 3}, {"codigo": "3334102", "nombre": "MOTOR EVAPORADOR 230V 9W PN 3110 AMS", "stock": 1}, {"codigo": "3339904", "nombre": "MOTOR MOLINILLO 220V/60HZ PN 0V0451", "stock": 2}, {"codigo": "3334071", "nombre": "MOTOR REDUCTOR PN OV3672 1.5M BRI-KIKK", "stock": 7}, {"codigo": "3339533", "nombre": "MOTOR VENTILADOR 10W 220V RPM1550", "stock": 4}, {"codigo": "3339231", "nombre": "MOTOREDUCTOR  5S PN 099617 COLIB BR KIK", "stock": 1}, {"codigo": "3334147", "nombre": "MOTOREDUCTOR 3RPM 230V-50HZ N 255251 KIK", "stock": 3}, {"codigo": "3335132", "nombre": "MOTORREDUCTOR 24V PN 254552 NECTA", "stock": 2}, {"codigo": "3335780", "nombre": "MOTORREDUCTOR AZUCAR PN 254553 NECTA", "stock": 7}, {"codigo": "850340", "nombre": "MUESCA CAMLN IM30", "stock": 9}, {"codigo": "850341", "nombre": "MUESCA USI IM30", "stock": 3}, {"codigo": "3334426", "nombre": "NIVELADOR DE PATAS  PN 20121 AMS", "stock": 4}, {"codigo": "3339527", "nombre": "NUCLEO ELECTROV COLIB BR KIK PN 99058", "stock": 2}, {"codigo": "3343740", "nombre": "O RING 259612 NECTA", "stock": 10}, {"codigo": "3335788", "nombre": "O RING P.N.39400401", "stock": 5}, {"codigo": "3334012", "nombre": "O RING SIL 2-217 GR CAF N 253411 CO BR K", "stock": 20}, {"codigo": "3339189", "nombre": "O RING SILICONADO 2 X 5", "stock": 47}, {"codigo": "3343315", "nombre": "ORING LANZA 257998 CONCER", "stock": 4}, {"codigo": "3336676", "nombre": "ORING NITRILO 2X6 PN 99880 MOTOR KIK BR", "stock": 13}, {"codigo": "3334957", "nombre": "PANEL FRONTAL PN 24616 AMS", "stock": 5}, {"codigo": "3334066", "nombre": "PANEL INGRESO MONEDA PN 0V3456 SNAK KIK", "stock": 2}, {"codigo": "3335126", "nombre": "PANTALLA ELECTRONIC GRAF PN 255688 NECTA", "stock": 4}, {"codigo": "3333647", "nombre": "PASADOR DESCARGA AZUC N OV2949 COLIB KIK", "stock": 2}, {"codigo": "3339659", "nombre": "PASADOR PN 093891", "stock": 3}, {"codigo": "3339301", "nombre": "PATA MONT TRASERA CUBIERTA HILO PN 21124", "stock": 2}, {"codigo": "3334054", "nombre": "PATA PN 252124 KIKKO", "stock": 2}, {"codigo": "3335235", "nombre": "PESO PALETINAS 11.5CM PN 252034", "stock": 16}, {"codigo": "3343195", "nombre": "PLACA AISLANTE MICRO PN 90681", "stock": 1}, {"codigo": "3335743", "nombre": "PLACA PROTECCION A CABLE ELECTRICO AMS", "stock": 1}, {"codigo": "3338642", "nombre": "PORTA-ETIQUETA INTRODUC MONEDA PN 255799", "stock": 4}, {"codigo": "3343141", "nombre": "PORTA-PLACA LECTOR BILLETES PN 255681", "stock": 6}, {"codigo": "3342989", "nombre": "POS UPT 1000 CCPCI 24-CLGL-4S PN16001011", "stock": 8}, {"codigo": "3342989", "nombre": "POS UPT 1000 CCPCI 24-CLGL-4S PN16001011", "stock": 2}, {"codigo": "3339452", "nombre": "PRECIOS AMS MIXTAS 19MM X 11MM S/ 1.00", "stock": 1000}, {"codigo": "3339449", "nombre": "PRECIOS AMS MIXTAS 19MM X 11MM S/ 1.20", "stock": 1000}, {"codigo": "3334590", "nombre": "PRECIOS AMS MIXTAS 19MM X 11MM S/ 1.30", "stock": 1000}, {"codigo": "3334729", "nombre": "PRECIOS AMS MIXTAS 19MM X 11MM S/ 1.70", "stock": 1000}, {"codigo": "3339465", "nombre": "PRECIOS AMS MIXTAS 19MM X 11MM S/ 1.80", "stock": 500}, {"codigo": "3339451", "nombre": "PRECIOS AMS MIXTAS 19MM X 11MM S/ 2.20", "stock": 1000}, {"codigo": "3335848", "nombre": "PROTECTOR TERMICO D BOMBA VIBR PN 098815", "stock": 7}, {"codigo": "3339401", "nombre": "PUERTA SUMINISTRO PN 0V2093 COLI BRI KIK", "stock": 2}, {"codigo": "3334439", "nombre": "RACOR AGUA AIR BREAK PN 0V1749", "stock": 2}, {"codigo": "3339383", "nombre": "RAMPA CAIDA VASO NEGRO 73/74 KIKO 0V4266", "stock": 1}, {"codigo": "3335152", "nombre": "RANURA INGRE MONED PN 1121066 CAMALEON", "stock": 6}, {"codigo": "3339929", "nombre": "RECIPIENTE 4.5 L AZUCAR PN 255836", "stock": 2}, {"codigo": "3335123", "nombre": "RECIPIENTE FUNDOS AZUL PN254569 NECTA", "stock": 6}, {"codigo": "3333999", "nombre": "REDUCTOR CAUDAL PN 97914 COLIB BRI KIKK", "stock": 2}, {"codigo": "3334122", "nombre": "REJILLA HUECO SUMINISTRO PN 250354 KIKKO", "stock": 2}, {"codigo": "3339471", "nombre": "RESISTENCIA PLANA 12W-220V BRIO-KIKKO", "stock": 3}, {"codigo": "3339106", "nombre": "ROLLO PRECIO MOD CRANE 181 451 PN1477014", "stock": 20}, {"codigo": "3334918", "nombre": "RUEDA PUERTA PN 20177 AMS", "stock": 1}, {"codigo": "3343926", "nombre": "SALTARIN TE 10X10 CM", "stock": 20}, {"codigo": "3334680", "nombre": "SEGURO ESPIRAL BANDEJA  PN 1457063 CRANE", "stock": 3}, {"codigo": "3334682", "nombre": "SEGURO ESPIRAL PN 1457064 181-449 CRANE", "stock": 2}, {"codigo": "3338907", "nombre": "SELEC ALCONCERTO ESPRES LARGO GRAN C/LOG", "stock": 1}, {"codigo": "3343944", "nombre": "SELECCIONADOR CAFE AVELLANA CONCE", "stock": 70}, {"codigo": "3343823", "nombre": "SELECCIONADOR TE MARACUYA CONCERTO", "stock": 80}, {"codigo": "3339608", "nombre": "SENSOR BOARD SECUNDARY PN 24343 AMS", "stock": 1}, {"codigo": "3339462", "nombre": "SENSOR DGOLPE CAID PROD PN1122923 CAMALE", "stock": 3}, {"codigo": "3334962", "nombre": "SENSOR ENTREGA PRODUC PN CR0003022 CRANE", "stock": 2}, {"codigo": "3334962", "nombre": "SENSOR ENTREGA PRODUC PN CR0003022 CRANE", "stock": 1}, {"codigo": "3339136", "nombre": "SENSOR TEMPERATURE SENS II PN 21468 AMS", "stock": 4}, {"codigo": "3336427", "nombre": "SENSOR VENT SECUN CR0018333 CRANE181/449", "stock": 2}, {"codigo": "3336427", "nombre": "SENSOR VENT SECUN CR0018333 CRANE181/449", "stock": 2}, {"codigo": "3339458", "nombre": "SOCKET ESPIRAL PN 1477113 CRANNE 181-449", "stock": 20}, {"codigo": "3339246", "nombre": "SOCKET ESPIRAL PN 20966 AMS", "stock": 10}, {"codigo": "3339506", "nombre": "SOCKET P FLUORESCENTE PN1151265 CAMALEON", "stock": 10}, {"codigo": "3333900", "nombre": "SOPORTE BOMBA PN OV0191", "stock": 6}, {"codigo": "3335154", "nombre": "SOPORTE LAMPARA EXTERN PN 1143528 CAMALE", "stock": 4}, {"codigo": "3343147", "nombre": "SOPORTE TARJETA PN 257266", "stock": 1}, {"codigo": "3339554", "nombre": "STICKER DN58 MEDIA LISTA A 12 X 4", "stock": 10}, {"codigo": "3336599", "nombre": "STICKER GEN KIKO 10X20 S/CENSO PROV", "stock": 8}, {"codigo": "3334725", "nombre": "STICKER GENERICO KIKO S/CENSO 10 X 20 CM", "stock": 10}, {"codigo": "3339108", "nombre": "STICKER GENERICO LI S/CENSO MAQ CAMALEON", "stock": 44}, {"codigo": "3343652", "nombre": "STICKER INSTRUCTIVO POS Y BILLETERA", "stock": 50}, {"codigo": "3336562", "nombre": "STICKER OVAL 9X12.5 MQ FUERA SERV-VERDE", "stock": 50}, {"codigo": "3333794", "nombre": "STICKERS MARCADOR G3 S/ 1.80", "stock": 200}, {"codigo": "3334283", "nombre": "STICKERS MARCADOR G3 S/ 2.80", "stock": 410}, {"codigo": "3334281", "nombre": "STICKERS MARCADOR G3 S/ 3.50", "stock": 800}, {"codigo": "3339245", "nombre": "STICKERS MARCADOR S/ 2.00 G3 CAMALEON", "stock": 700}, {"codigo": "3339247", "nombre": "STICKERS MARCADOR S/ 2.20 G3 CAMALEON", "stock": 500}, {"codigo": "3336604", "nombre": "STICKERS MARCADOR S/ 2.30 G3 CAMALEON", "stock": 600}, {"codigo": "3339135", "nombre": "STICKERS MARCADOR S/ 2.50 G3 CAMALEON", "stock": 590}, {"codigo": "3343029", "nombre": "STICKERS MARCADOR S/ 2.70 G3 CAMALEON", "stock": 600}, {"codigo": "3334622", "nombre": "STICKERS MARCADOR S/ 3.00 G3 CAMALEON", "stock": 1736}, {"codigo": "3343597", "nombre": "STICKERS MARCADOR S/ 3.2  CAMALEON G3", "stock": 1700}, {"codigo": "850020", "nombre": "SUPER CHIP INTERNET MOVIL ENTEL PLUS", "stock": 25}, {"codigo": "3335747", "nombre": "SWITCH DE PUERTA PN 323007 CAMAL VUE 40", "stock": 4}, {"codigo": "3334692", "nombre": "SWITCH PN 368299 VUE 40", "stock": 15}, {"codigo": "3333818", "nombre": "TAPA DE TORRETA 0V3658 IV", "stock": 6}, {"codigo": "3339468", "nombre": "TAPA DESLIZ MON MAQ CAMALEON PN 1182145", "stock": 5}, {"codigo": "3334699", "nombre": "TAPA PN 23370 AMS", "stock": 7}, {"codigo": "3336284", "nombre": "TARJETA CPU 16 BIT 4MB P/N 252436 BRIO3", "stock": 6}, {"codigo": "3336284", "nombre": "TARJETA CPU 16 BIT 4MB P/N 252436 BRIO3", "stock": 4}, {"codigo": "3334108", "nombre": "TARJETA CPU PN 253924 DE MAQ ZAMBA", "stock": 3}, {"codigo": "3334108", "nombre": "TARJETA CPU PN 253924 DE MAQ ZAMBA", "stock": 3}, {"codigo": "3339538", "nombre": "TARJETA CTROL SENS PN 26932 C/ILUMI AMS", "stock": 5}, {"codigo": "3339538", "nombre": "TARJETA CTROL SENS PN 26932 C/ILUMI AMS", "stock": 3}, {"codigo": "3339538", "nombre": "TARJETA CTROL SENS PN 26932 C/ILUMI AMS", "stock": 1}, {"codigo": "3335128", "nombre": "TARJETA EJECUCIONES PN 255310 NECTA", "stock": 3}, {"codigo": "3339374", "nombre": "TARJETA LOGICA 4M PN 252604 COLIB KORI", "stock": 1}, {"codigo": "3339147", "nombre": "TARJETA LOGICA CAMALEON PN 1167867-44", "stock": 3}, {"codigo": "3343750", "nombre": "TARJETA LOGICA CAMLN 1279788-17", "stock": 5}, {"codigo": "3334476", "nombre": "TARJETA LOGICA CONECTOR PN 64700960 DN58", "stock": 2}, {"codigo": "3334476", "nombre": "TARJETA LOGICA CONECTOR PN 64700960 DN58", "stock": 2}, {"codigo": "3339456", "nombre": "TARJETA LOGICA MOTS PN CR0012301 181-449", "stock": 3}, {"codigo": "3339149", "nombre": "TARJETA LOGICA PN CR0028171 CRANE181-449", "stock": 2}, {"codigo": "3335555", "nombre": "TARJETA RELAY EJEC CONCERTO PN 255310", "stock": 5}, {"codigo": "3336286", "nombre": "TARJETA RELAY P/N 252437 BRIO 3", "stock": 6}, {"codigo": "3336286", "nombre": "TARJETA RELAY P/N 252437 BRIO 3", "stock": 3}, {"codigo": "3334009", "nombre": "TARJETA SELECCION P/N 252257 BRIO", "stock": 2}, {"codigo": "3339483", "nombre": "TARJETA SENS BAS RECIPI PN80492959 CRANE", "stock": 3}, {"codigo": "3339226", "nombre": "TECLADO PULSADORES NEGRA PN OV4270 KIKKO", "stock": 7}, {"codigo": "3336732", "nombre": "TECLADO SELECCIÓN PN 25688 AMS", "stock": 19}, {"codigo": "850103", "nombre": "TERMINAL DE PAGO POS PAX IM30", "stock": 16}, {"codigo": "3338719", "nombre": "TOPE PERNO PN 254089", "stock": 1}, {"codigo": "3338777", "nombre": "TORNILLO HILO FINO 25MM MENSOLA", "stock": 40}, {"codigo": "3333679", "nombre": "TRANSFORM 25-25 V PN OV0014 COL BRI KIKK", "stock": 3}, {"codigo": "3334802", "nombre": "TRANSFORMADOR D 230V/24V PN 3258 AMS", "stock": 6}, {"codigo": "3343588", "nombre": "TRANSFORMER  24V  NP 1121932", "stock": 1}, {"codigo": "3335298", "nombre": "TUBO 25 C/BASE PURPURA PN 794026100P MEI", "stock": 1}, {"codigo": "3335329", "nombre": "TUBO DE BOMBA/CALDERA LARG 140 PN 255128", "stock": 2}, {"codigo": "3339934", "nombre": "TUBO SILIC 6X12 MARR PN 097512 KOR KORI", "stock": 40}, {"codigo": "3335748", "nombre": "TUERCA D PLASTIC PN 1073538 CAMALEON", "stock": 2}, {"codigo": "3335173", "nombre": "TUERCA DE PRESION DE 3/16 PULG. PN 3113", "stock": 1}, {"codigo": "3333753", "nombre": "TUERCA HUSILLO CANISTER PN 95849", "stock": 2}, {"codigo": "3338732", "nombre": "TUERCA HUSILLO CONTENEDOR PN 254090", "stock": 3}, {"codigo": "3335508", "nombre": "UND D FRIO MAQUINA MIXTA PN 22140-01 AMS", "stock": 1}, {"codigo": "3336322", "nombre": "UNID COLECTOR SENSOR PN CR0027487 DN5800", "stock": 4}, {"codigo": "3336322", "nombre": "UNID COLECTOR SENSOR PN CR0027487 DN5800", "stock": 1}, {"codigo": "3336288", "nombre": "UNIDAD DE FRIO AMS SNACK PN 25633-04", "stock": 4}, {"codigo": "3336288", "nombre": "UNIDAD DE FRIO AMS SNACK PN 25633-04", "stock": 3}, {"codigo": "3336744", "nombre": "UNIDAD DE FRIO CAMALEON PN 1200094-1", "stock": 6}, {"codigo": "3336744", "nombre": "UNIDAD DE FRIO CAMALEON PN 1200094-1", "stock": 4}, {"codigo": "3339631", "nombre": "UNIDAD FRIO MAQUINA MXTA PN 22104-01 AMS", "stock": 2}, {"codigo": "850022", "nombre": "UPT1000 SPACER FRAME", "stock": 85}, {"codigo": "3333705", "nombre": "VENTILADOR 12 VDC PN 251867", "stock": 7}, {"codigo": "3339498", "nombre": "VENTOLINA PARA MIXER PN 253991 CONCERTO", "stock": 2}];
+
+let historial=[];
+
+function render(q=""){
+const lista=document.getElementById("lista");
+lista.innerHTML="";
+
+const resultados=data.filter(x=>
+x.nombre.toLowerCase().includes(q) ||
+x.codigo.includes(q)
+);
+
+document.getElementById("contador").innerText=resultados.length;
+
+resultados.forEach(x=>{
+
+let div=document.createElement("div");
+
+div.className="item";
+
+div.innerHTML=`
+<b>${x.nombre}</b><br>
+Código: <span class='codigo'>${x.codigo}</span><br>
+${x.stock>0 ?
+"<span class='ok'>🟢 STOCK DISPONIBLE ("+x.stock+")</span>" :
+"<span class='no'>🔴 SIN STOCK</span>"}
+`;
+
+div.onclick=()=>mostrar(x);
+
+lista.appendChild(div);
+
+});
+
+}
+
+function mostrar(x){
+
+document.getElementById("nombre").innerText=x.nombre;
+document.getElementById("codigo").innerText=x.codigo;
+document.getElementById("stock").innerText=x.stock;
+
+document.getElementById("estado").innerHTML=
+x.stock>0 ?
+"<span class='ok'>🟢 STOCK DISPONIBLE</span>" :
+"<span class='no'>🔴 SIN STOCK</span>";
+
+historial.unshift(x.nombre);
+
+historial=[...new Set(historial)].slice(0,5);
+
+document.getElementById("historial").innerHTML=
+historial.join("<br>");
+
+}
+
+function copiarCodigo(){
+
+let codigo=document.getElementById("codigo").innerText;
+
+navigator.clipboard.writeText(codigo);
+
+alert("Código copiado: "+codigo);
+
+}
+
+document.getElementById("buscar").addEventListener("input",(e)=>{
+render(e.target.value.toLowerCase());
+});
+
+function toggleDark(){
+document.body.classList.toggle("dark");
+}
+
+render();
+
+</script>
+
+</body>
+</html>
